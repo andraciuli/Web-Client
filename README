@@ -1,0 +1,59 @@
+### Ciulinca Andra Stefania - 324CA
+
+## Web Client
+
+The homework was implemented starting from lab9.
+The requests.c is almost the same as in lab, but it also adds a token when needed and implemented a function for deletion, used for delete_book command.
+
+## Client.c:
+
+In main: need to open connection for every command and then read the command from stdin. Then the command is proccesed.
+
+#### Commands:
+
+Register: First the username and the password are read from stdin using a buffer. The buffer makes sure that the entire line is read. 
+After that evrithing is copied from the buffer in the username/password, exept the last character, the newline. The username and the password 
+can't contain whitespace, if they do then an error message is returned.
+After that the body_data is build by adding the username and the password as a JSON, and the compute_post_request function is called to
+build the message, with the host, url and content_type specified in task description. After the message is sent to server a response is received 
+and is interpreted. If the response contains the word "error" then something went wrong, like a user is already registered with the same username, 
+and it prints an error message, else it returns a success messaje and then the allocated memory is freed.
+
+Login: Uses the same logic as registerd, but it also checks if there is already a user logged in. If it is it returns an error message, else it 
+continues the same as in register. Here there are more possible error messages, like invalis password, that are handled. If the response doesn't 
+return an error the the cookies are extracted from the response by searching for "connect.sid" and adding it and everything after that, until ";" 
+in *cookies. Then a success message is printed
+
+Enter_library: For this command first if the cookies are null it means the user is not logged in and if the token is not null it means the user 
+already used the command enter_libray. After these verifications
+the response is receveid using the specific url and, for the message, the compute_get_request function. After that the response is interpreted 
+and if it doesn't contain an error the token is build by retriving everything after "token=" " (this is where +9 comes from) and until " "}" 
+and a success message is printed.
+
+Get_books: For this command first if the cookies are null it means the user is not logged in and if the token is null it means the user didn't use 
+the ener_library command before so it display an error message. The response is received and if it doesn't contain an error the books are extracted by 
+getting everything between "[]" and then displayed.
+
+Get_book: For this command first if the cookies are null it means the user is not logged in and if the token is null it means the user didn't use the 
+ener_library command before so it display an error message. Then to the url is added the id of the book to delete. The message is obtained using 
+compute_get_request and then the response is received nd if it doesn't contain an error the book is extracted using basic_extract_json_response 
+function from helpers.c and then displayed.
+
+Add_book: For every field, first the entire line from the input is read into a buffer, then the newline is removed. The conntent of the buffer is 
+the copied into the specific field. In this way it is ensured that, even if a field contain a space, the content is securly saved. After that it 
+continues with the basic verifications for the cookies and teh token. Then the fields are verified. If a field it is empty or if the page_count is 
+not a number then it displays an error message. Then the response is received and an error message is diplayed if it contains the word "error" or a 
+success message otherwise.
+
+Delete_book: For this command first if the cookies are null it means the user is not logged in and if the token is null it means the user didn't 
+use the ener_library command before so it display an error message. Then the url is build by adding the id of the book to delete.
+The response is received and the errors are handled. If there are no errors a success message is diplayed.
+
+Logout: First if no user is logged an error message is displayed.
+The response is received and the errors are handled. If there are no errors a success message is diplayed and the cookies and the token are 
+set to null.
+
+Exit: The connection is closed and the program exits from the while loop.
+
+If none of these commands are used then an error message is displayed.
+
